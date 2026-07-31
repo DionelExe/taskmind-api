@@ -1,0 +1,7 @@
+.venv
+__pycache__
+*.pyc
+.coverage
+coverage.xml
+.env
+firebase-credentials.json

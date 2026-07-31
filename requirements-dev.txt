@@ -1,0 +1,9 @@
+-r requirements.txt
+locust
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+ruff
+flake8
+bandit

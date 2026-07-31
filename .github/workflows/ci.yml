@@ -1,0 +1,108 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality-and-tests:
+    name: Quality and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+
+      - name: Linter de calidad (Flake8)
+        run: flake8 app/
+
+      - name: Análisis de seguridad estático (Bandit)
+        run: bandit -r app/ -ll
+
+      - name: Linter adicional (Ruff)
+        run: ruff check .
+
+      - name: Ejecutar tests unitarios
+        run: pytest tests/unit -v --cov=app --cov-report=term-missing --cov-report=xml
+
+      - name: Reconstruir credenciales de Firebase
+        env:
+          FIREBASE_CREDENTIALS_JSON: ${{ secrets.FIREBASE_CREDENTIALS_JSON }}
+        run: printf '%s' "$FIREBASE_CREDENTIALS_JSON" > firebase-credentials.json
+
+      - name: Ejecutar tests de integración
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
+        run: pytest tests/integration -v
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Validate application contract
+        run: |
+          python -c "from main import app; paths = app.openapi()['paths']; assert paths['/api/v1/tasks/']['post']['responses']['201']; assert paths['/api/v1/tasks/']['get']['responses']['200']; print('API contract validated')"
+
+  analyze:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install development dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Compile Python files
+        run: python -m compileall -q app notification_service main.py get_token.py locustfile.py
+
+      - name: SonarCloud analysis
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+  container:
+    name: Docker build
+    runs-on: ubuntu-latest
+    needs: [quality-and-tests, analyze]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build container
+        run: docker build --tag taskmind-api:${{ github.sha }} .
+
+      - name: Smoke test container
+        run: |
+          docker run --detach --name taskmind-smoke --publish 8000:8000 taskmind-api:${{ github.sha }}
+          trap 'docker rm --force taskmind-smoke' EXIT
+          for attempt in {1..15}; do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs taskmind-smoke
+          exit 1
