@@ -35,7 +35,7 @@ jobs:
         run: ruff check .
 
       - name: Ejecutar tests unitarios
-        run: pytest tests/unit -v --cov=app --cov-report=term-missing --cov-report=xml
+        run: python -m pytest tests/unit -v --cov=app --cov-report=term-missing --cov-report=xml
 
       - name: Reconstruir credenciales de Firebase
         env:
@@ -46,7 +46,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
-        run: pytest tests/integration -v
+        run: python -m pytest tests/integration -v
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
