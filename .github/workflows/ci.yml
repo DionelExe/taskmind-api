@@ -13,29 +13,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install development dependencies
         run: python -m pip install -r requirements-dev.txt
-
       - name: Run unit and integration tests
-        run: python -m pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
-
+        run: python -m pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70 -vv
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
-
       - name: Validate application contract
         run: |
           python - <<'PY'
           from main import app
-
           paths = app.openapi()["paths"]
           assert paths["/api/v1/tasks/"]["post"]["responses"]["201"]
           assert paths["/api/v1/tasks/"]["get"]["responses"]["200"]
@@ -49,21 +43,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install development dependencies
         run: python -m pip install -r requirements-dev.txt
-
       - name: Run Ruff linter
         run: python -m ruff check .
-
       - name: Compile Python files
         run: python -m compileall -q app notification_service main.py get_token.py locustfile.py
-
       - name: SonarCloud analysis
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v6
@@ -77,6 +66,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Build container
         run: docker build --tag taskmind-api:${{ github.sha }} .

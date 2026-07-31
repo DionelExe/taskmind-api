@@ -15,6 +15,7 @@ from google.genai import types
 from pydantic import BaseModel, Field
 
 from app.database.firebase import get_firestore_client, initialize_firebase
+from app.services.notification_client import send_notification
 
 router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -76,10 +77,7 @@ async def classify_priority(title: str, description: str) -> str:
             response_schema={
                 "type": "OBJECT",
                 "properties": {
-                    "priority": {
-                        "type": "STRING",
-                        "enum": ["low", "medium", "high"],
-                    }
+                    "priority": {"type": "STRING", "enum": ["low", "medium", "high"]}
                 },
                 "required": ["priority"],
             },
@@ -130,5 +128,12 @@ async def create_task(
     await asyncio.to_thread(
         client.collection("tasks").document(created_task.id).set,
         created_task.model_dump(),
+    )
+    await send_notification(
+        {
+            "recipient": created_task.owner_uid,
+            "title": "Nueva tarea creada",
+            "message": f"Se creó la tarea: {created_task.title}",
+        }
     )
     return created_task
