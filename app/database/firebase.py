@@ -3,7 +3,7 @@
 import os
 
 import firebase_admin
-from firebase_admin import credentials
+from firebase_admin import credentials, firestore
 
 
 def initialize_firebase() -> firebase_admin.App:
@@ -19,3 +19,8 @@ def initialize_firebase() -> firebase_admin.App:
 
         firebase_credentials = credentials.Certificate(credentials_path)
         return firebase_admin.initialize_app(firebase_credentials)
+
+
+def get_firestore_client() -> firestore.Client:
+    """Devuelve el cliente de Firestore asociado a la aplicación."""
+    return firestore.client(app=initialize_firebase())

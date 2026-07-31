@@ -5,7 +5,6 @@ from fastapi import FastAPI
 
 from app.routers.tasks import router as tasks_router
 
-
 load_dotenv()
 
 app = FastAPI(title="TaskMind-API", version="0.1.0")
@@ -18,7 +17,13 @@ async def health_check() -> dict[str, str]:
     return {"message": "TaskMind-API is running"}
 
 
+@app.get("/health")
+async def readiness_check() -> dict[str, str]:
+    """Expone un endpoint estable para smoke tests y balanceadores."""
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", reload=True)
+    uvicorn.run("main:app", env_file=".env", reload=True)
