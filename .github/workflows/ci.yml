@@ -20,10 +20,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install development dependencies
-        run: pip install -r requirements-dev.txt
+        run: python -m pip install -r requirements-dev.txt
 
       - name: Run unit and integration tests
-        run: pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
+        run: python -m pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -56,10 +56,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install development dependencies
-        run: pip install -r requirements-dev.txt
+        run: python -m pip install -r requirements-dev.txt
 
       - name: Run Ruff linter
-        run: ruff check .
+        run: python -m ruff check .
 
       - name: Compile Python files
         run: python -m compileall -q app notification_service main.py get_token.py locustfile.py
