@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Compile Python files
+        run: python -m compileall -q .
+
+      - name: Validate application contract
+        run: |
+          python - <<'PY'
+          from main import app
+
+          paths = app.openapi()["paths"]
+          assert paths["/api/v1/tasks/"]["post"]["responses"]["201"]
+          assert paths["/api/v1/tasks/"]["get"]["responses"]["200"]
+          print("API contract validated")
+          PY
+
+  container:
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build container
+        run: docker build --tag taskmind-api:${{ github.sha }} .
