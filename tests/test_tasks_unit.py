@@ -15,7 +15,10 @@ def test_task_create_requires_title_and_description() -> None:
 
 
 @pytest.mark.asyncio
-async def test_classify_priority_normalizes_gemini_response() -> None:
+async def test_classify_priority_normalizes_gemini_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     response = Mock(text='{"priority": "HIGH"}')
     client = Mock()
     client.aio.models.generate_content = AsyncMock(return_value=response)
@@ -27,7 +30,10 @@ async def test_classify_priority_normalizes_gemini_response() -> None:
 
 
 @pytest.mark.asyncio
-async def test_classify_priority_rejects_invalid_response() -> None:
+async def test_classify_priority_rejects_invalid_response(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     response = Mock(text='{"priority": "critical"}')
     client = Mock()
     client.aio.models.generate_content = AsyncMock(return_value=response)
