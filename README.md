@@ -6,9 +6,20 @@ prioridad mediante Google GenAI y persistirlas en Firestore.
 ## Documentación
 
 - [Historias de usuario](docs/user_stories.md)
+- [Evidencia TDD](docs/tdd.md)
 - [Estrategia de testing](docs/testing.md)
 - [Justificación de Cloud Run](docs/cloud-justification.md)
 - [Configuración y despliegue](docs/deployment.md)
+
+## Historias de usuario
+
+- Como usuario autenticado, quiero crear una tarea para que Gemini determine
+  su prioridad y TaskMind-API la persista en Firestore.
+- Como usuario de TaskMind-API, quiero autenticar mis solicitudes con Firebase
+  Auth para acceder únicamente a mis tareas.
+
+Los criterios de aceptación de ambas historias están escritos en sintaxis
+Gherkin en [docs/user_stories.md](docs/user_stories.md).
 
 ## Configuración local
 

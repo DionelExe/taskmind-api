@@ -16,6 +16,9 @@ El flujo de desarrollo recomendado es TDD:
 2. **Green:** implementar el comportamiento mínimo.
 3. **Refactor:** mejorar el código manteniendo las pruebas verdes.
 
+La evidencia aplicada al endpoint secundario `GET /health` está documentada en
+[docs/tdd.md](tdd.md).
+
 Las llamadas bloqueantes de Firebase se ejecutan fuera del event loop mediante
 `asyncio.to_thread`. El pipeline reconstruye temporalmente la credencial desde
 `FIREBASE_CREDENTIALS_JSON` y nunca imprime su contenido.
