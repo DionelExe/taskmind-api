@@ -73,14 +73,14 @@ try {
 }
 ```
 
-La protección de `main` debe exigir los checks `test`, `analyze` y `container`
-en Settings > Branches > Branch protection rules.
+La protección de `master` debe exigir los checks `quality-and-tests`, `analyze`
+y `container` en Settings > Branches > Branch protection rules.
 
 ## GitHub Actions
 
 El workflow de [ci.yml](../.github/workflows/ci.yml) ejecuta Flake8, Bandit,
 Ruff, pruebas unitarias, pruebas de integración, compilación, validación del
-contrato OpenAPI y construcción de Docker en cada Pull Request hacia `main`.
+contrato OpenAPI y construcción de Docker en cada Pull Request hacia `master`.
 Las pruebas de integración se saltean si no existen secretos.
 
 Configurá estos Repository Secrets en Settings > Secrets and variables >
@@ -95,7 +95,7 @@ El workflow [cd.yml](../.github/workflows/cd.yml) publica la imagen con las
 etiquetas `latest` y el SHA del commit y despliega la etiqueta inmutable en
 Cloud Run. Requiere las variables de repositorio `GCP_PROJECT_ID`,
 `GCP_REGION`, `GCP_ARTIFACT_REPOSITORY` y `CLOUD_RUN_SERVICE`. La protección de
-`main` debe exigir los checks `quality-and-tests`, `analyze` y `container`
+`master` debe exigir los checks `quality-and-tests`, `analyze` y `container`
 antes de permitir un merge.
 
 ## Cloud Run

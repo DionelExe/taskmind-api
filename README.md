@@ -35,7 +35,7 @@ credenciales reales. Nunca se almacenan secretos en el repositorio.
 
 ## CI/CD
 
-Cada `push` o Pull Request hacia `main` ejecuta Flake8, Bandit, las pruebas
+Cada `push` o Pull Request hacia `master` ejecuta Flake8, Bandit, las pruebas
 unitarias, las pruebas de integración condicionadas por secretos, el contrato
 OpenAPI y el build de Docker. El workflow de despliegue publica la imagen en
 Artifact Registry y actualiza Cloud Run cuando está configurado el secreto
