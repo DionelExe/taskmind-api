@@ -1,4 +1,4 @@
-name: CI
+name: Continuous Integration
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  validate:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,11 +18,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+      - name: Install development dependencies
+        run: pip install -r requirements-dev.txt
 
-      - name: Compile Python files
-        run: python -m compileall -q .
+      - name: Run unit and integration tests
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml --cov-fail-under=70
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
       - name: Validate application contract
         run: |
@@ -35,9 +41,29 @@ jobs:
           print("API contract validated")
           PY
 
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install development dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run Ruff linter
+        run: ruff check .
+
+      - name: Compile Python files
+        run: python -m compileall -q app main.py get_token.py locustfile.py
+
   container:
     runs-on: ubuntu-latest
-    needs: validate
+    needs: [test, analyze]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

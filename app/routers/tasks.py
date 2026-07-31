@@ -3,7 +3,7 @@
 import asyncio
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -102,7 +102,11 @@ async def get_tasks(
     """Consulta las tareas del usuario autenticado."""
     client = await asyncio.to_thread(get_firestore_client)
     documents = await asyncio.to_thread(
-        lambda: list(client.collection("tasks").where("owner_uid", "==", user["uid"]).stream())
+        lambda: list(
+            client.collection("tasks")
+            .where("owner_uid", "==", user["uid"])
+            .stream()
+        )
     )
     return {"tasks": [document.to_dict() for document in documents]}
 
@@ -119,7 +123,7 @@ async def create_task(
         title=task.title,
         description=task.description,
         priority=priority,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        created_at=datetime.now(UTC).isoformat(),
         owner_uid=user["uid"],
     )
     client = await asyncio.to_thread(get_firestore_client)
