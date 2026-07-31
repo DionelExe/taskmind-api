@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -43,6 +44,8 @@ jobs:
 
   analyze:
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,7 +62,14 @@ jobs:
         run: ruff check .
 
       - name: Compile Python files
-        run: python -m compileall -q app main.py get_token.py locustfile.py
+        run: python -m compileall -q app notification_service main.py get_token.py locustfile.py
+
+      - name: SonarCloud analysis
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
   container:
     runs-on: ubuntu-latest
