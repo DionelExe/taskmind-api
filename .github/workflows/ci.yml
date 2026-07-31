@@ -35,7 +35,7 @@ jobs:
         run: ruff check .
 
       - name: Ejecutar tests unitarios
-        run: pytest tests/unit -v --cov=app --cov-report=term-missing --cov-report=xml
+        run: python -m pytest tests/unit -v --cov=app --cov-report=term-missing --cov-report=xml
 
       - name: Reconstruir credenciales de Firebase
         env:
@@ -46,7 +46,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/firebase-credentials.json
-        run: pytest tests/integration -v
+        run: python -m pytest tests/integration -v
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -61,6 +61,8 @@ jobs:
   analyze:
     name: Static analysis
     runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,10 +79,9 @@ jobs:
         run: python -m compileall -q app notification_service main.py get_token.py locustfile.py
 
       - name: SonarCloud analysis
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
 
   container:
